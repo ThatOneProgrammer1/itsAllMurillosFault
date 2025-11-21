@@ -1,18 +1,73 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-//hello there
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+
+
 
 @TeleOp
 public class carpenterCannon extends LinearOpMode {
+
     private DcMotorEx shooter1;
     private DcMotorEx shooter2;
     private DcMotorEx turn1;
+    private Limelight3A limelight;
+
+    // method to find our distance when we wanna scale power
+    public double getDistance(LLResult result){
+
+        if(result.isValid() && !result.getFiducialResults().isEmpty()){
+
+            LLResultTypes.FiducialResult tag = result.getFiducialResults().get(0);
+
+            Pose3D tagPose = tag.getTargetPoseCameraSpace();
+
+            Position pos = tagPose.getPosition();
+            Position inches = pos.toUnit(DistanceUnit.INCH);
+
+            double x = inches.x;
+            double y = inches.y;
+            double z = inches.z;
+
+            return Math.sqrt(x*x + y*y + z*z);
+
+        }
+
+        return -1;
+    }
+
+    // method to find the angle offset of limelight for tracking
+    public double getXOffset(LLResult result){
+
+        if(result.isValid() && !result.getFiducialResults().isEmpty()){
+            LLResultTypes.FiducialResult tag = result.getFiducialResults().get(0);
+
+            return tag.getTargetXDegrees();
+        }
+
+        return -1;
+    }
+
+    // same as above
+    public double getYOffset(LLResult result){
+        if(result.isValid() && !result.getFiducialResults().isEmpty()){
+            LLResultTypes.FiducialResult tag = result.getFiducialResults().get(0);
+
+            return tag.getTargetYDegrees();
+        }
+
+        return -1;
+    }
 
     @Override
     public void runOpMode() throws InterruptedException{
@@ -25,16 +80,26 @@ public class carpenterCannon extends LinearOpMode {
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-      //  turn1 = hardwareMap.get(DcMotorEx.class, "turn1");
+        // limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        //  turn1 = hardwareMap.get(DcMotorEx.class, "turn1");
 
         double turningPower = 0;
         double shootPower = 0;
+        // double distance = 0;
 
+        // limelight.setPollRateHz(100);
         waitForStart();
+        // limelight.start();
 
     if (isStopRequested()) return;
 
     while (opModeIsActive()){
+
+        /*
+        LLResult result = limelight.getLatestResult();
+        distance = getDistance(result);
+         */
+
         if (gamepad1.xWasPressed()){
             turningPower = 0;
             shootPower = 0;
