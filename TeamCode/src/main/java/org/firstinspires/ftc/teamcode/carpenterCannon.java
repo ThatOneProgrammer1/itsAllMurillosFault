@@ -22,6 +22,8 @@ public class carpenterCannon extends LinearOpMode {
     private DcMotorEx shooter2;
     private DcMotorEx turn1;
     private Limelight3A limelight;
+    private final int offset_zone = 15;
+    double turningPower = 0.0;
 
     // method to find our distance when we wanna scale power
     public double getDistance(LLResult result){
@@ -53,9 +55,28 @@ public class carpenterCannon extends LinearOpMode {
             LLResultTypes.FiducialResult tag = result.getFiducialResults().get(0);
 
             return tag.getTargetXDegrees();
+
         }
 
         return -1;
+    }
+
+    public double trackAprilTag(LLResult result){
+
+        double offset = getXOffset(result);
+
+        if(Math.abs(offset) < offset){
+            turningPower = 0;
+        }
+        else if(offset > offset_zone){
+            turningPower = 0.35;
+        }
+        else if(offset < -offset_zone){
+            turningPower = -0.35;
+        }
+
+        return offset;
+
     }
 
     // same as above
@@ -81,11 +102,14 @@ public class carpenterCannon extends LinearOpMode {
         shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        //  turn1 = hardwareMap.get(DcMotorEx.class, "turn1");
+        // turn1 = hardwareMap.get(DcMotorEx.class, "turn1");
+         turn1.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        double turningPower = 0;
-        double shootPower = 0;
-        // double distance = 0;
+
+        double shootPower = 0.0;
+        double distance = 0.0;
+        double xOffset = 0.0;
+        // moved turning power to be class variable btw
 
         // limelight.setPollRateHz(100);
         waitForStart();
@@ -98,7 +122,9 @@ public class carpenterCannon extends LinearOpMode {
         /*
         LLResult result = limelight.getLatestResult();
         distance = getDistance(result);
+        xOffset = trackAprilTag(result);
          */
+
 
         if (gamepad1.xWasPressed()){
             turningPower = 0;
@@ -114,10 +140,13 @@ public class carpenterCannon extends LinearOpMode {
         }
 
        // turn1.setPower(turningPower);
+
         shooter1.setPower(shootPower);
         shooter2.setPower(shootPower);
         telemetry.addData("Shooter power", shootPower);
         telemetry.addData("Turning Power", turningPower);
+        telemetry.addData("Distance", distance);
+        telemetry.addData("Target angle", xOffset);
         telemetry.update();
         }
     }
