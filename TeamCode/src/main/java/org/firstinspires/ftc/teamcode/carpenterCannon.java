@@ -22,7 +22,7 @@ public class carpenterCannon extends LinearOpMode {
     private DcMotorEx shooter2;
     private DcMotorEx turn1;
     private Limelight3A limelight;
-    private final int offset_zone = 15;
+    private final int offset_zone = 8;
     double turningPower = 0.0;
 
     // method to find our distance when we wanna scale power
@@ -51,11 +51,10 @@ public class carpenterCannon extends LinearOpMode {
     // method to find the angle offset of limelight for tracking
     public double getXOffset(LLResult result){
 
-        if(result.isValid() && !result.getFiducialResults().isEmpty()){
-            LLResultTypes.FiducialResult tag = result.getFiducialResults().get(0);
+        LLResultTypes.FiducialResult tag = getLatestResult(result);
 
+        if(tag != null){
             return tag.getTargetXDegrees();
-
         }
 
         return -1;
@@ -65,7 +64,7 @@ public class carpenterCannon extends LinearOpMode {
 
         double offset = getXOffset(result);
 
-        if(Math.abs(offset) < offset){
+        if(Math.abs(offset) < offset_zone){
             turningPower = 0;
         }
         else if(offset > offset_zone){
@@ -81,14 +80,23 @@ public class carpenterCannon extends LinearOpMode {
 
     // same as above
     public double getYOffset(LLResult result){
-        if(result.isValid() && !result.getFiducialResults().isEmpty()){
-            LLResultTypes.FiducialResult tag = result.getFiducialResults().get(0);
 
+        LLResultTypes.FiducialResult tag = getLatestResult(result);
+
+        if(tag != null){
             return tag.getTargetYDegrees();
         }
 
         return -1;
     }
+
+    public LLResultTypes.FiducialResult getLatestResult(LLResult result){
+        if(result.isValid() && !result.getFiducialResults().isEmpty()){
+            return result.getFiducialResults().get(0);
+        }
+        return null;
+    }
+
 
     @Override
     public void runOpMode() throws InterruptedException{
@@ -103,7 +111,6 @@ public class carpenterCannon extends LinearOpMode {
 
         // limelight = hardwareMap.get(Limelight3A.class, "limelight");
         // turn1 = hardwareMap.get(DcMotorEx.class, "turn1");
-         turn1.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
         double shootPower = 0.0;
