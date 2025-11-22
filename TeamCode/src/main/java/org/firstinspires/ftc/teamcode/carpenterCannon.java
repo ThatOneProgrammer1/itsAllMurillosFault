@@ -109,8 +109,8 @@ public class carpenterCannon extends LinearOpMode {
         shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        // limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        // turn1 = hardwareMap.get(DcMotorEx.class, "turn1");
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        turn1 = hardwareMap.get(DcMotorEx.class, "turn1");
 
 
         double shootPower = 0.0;
@@ -118,19 +118,19 @@ public class carpenterCannon extends LinearOpMode {
         double xOffset = 0.0;
         // moved turning power to be class variable btw
 
-        // limelight.setPollRateHz(100);
+        limelight.setPollRateHz(100);
         waitForStart();
-        // limelight.start();
+        limelight.start();
 
     if (isStopRequested()) return;
 
     while (opModeIsActive()){
 
-        /*
+
         LLResult result = limelight.getLatestResult();
         distance = getDistance(result);
         xOffset = trackAprilTag(result);
-         */
+
 
 
         if (gamepad1.xWasPressed()){
@@ -146,7 +146,7 @@ public class carpenterCannon extends LinearOpMode {
             shootPower = 0.65;
         }
 
-       // turn1.setPower(turningPower);
+        turn1.setPower(turningPower);
 
         shooter1.setPower(shootPower);
         shooter2.setPower(shootPower);
