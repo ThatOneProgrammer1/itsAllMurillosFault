@@ -9,15 +9,23 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 
+import java.util.HashSet;
 
 
 @TeleOp
 public class carpenterCannon extends LinearOpMode {
+
+
+    // fix limelight tracking onto both april tags
+    // fix distance power scaling method
+    // separate classes
+    // start drivetrain
 
     private DcMotorEx shooter1;
     private DcMotorEx shooter2;
@@ -27,6 +35,12 @@ public class carpenterCannon extends LinearOpMode {
     double turningPower = 0.0;
     double lastOffset = 0.0;
     int targetedFiducialId;
+    private HashSet<Integer> fiducialIds = new HashSet<>();
+
+    public double testShootDistanceScale(double distance){
+        double power = Range.scale(distance, 30, 115, 0.5, 0.65);
+        return Range.clip(power, 0.5, 0.65);
+    }
 
     // method to find our distance when we wanna scale power
     public double getDistance(LLResult result){
@@ -57,6 +71,7 @@ public class carpenterCannon extends LinearOpMode {
         LLResultTypes.FiducialResult tag = getLatestResult(result);
 
         if(tag != null){
+            targetedFiducialId = tag.getFiducialId();
             lastOffset = tag.getTargetXDegrees();
             return tag.getTargetXDegrees();
         }
@@ -91,7 +106,7 @@ public class carpenterCannon extends LinearOpMode {
             return tag.getTargetYDegrees();
         }
 
-        return -1;
+        return 0;
     }
 
     public LLResultTypes.FiducialResult getLatestResult(LLResult result){
@@ -131,6 +146,8 @@ public class carpenterCannon extends LinearOpMode {
 
     if (isStopRequested()) return;
 
+    boolean shooterActive = false;
+
     while (opModeIsActive()){
 
         LLResult result = slimelight.getLatestResult();
@@ -138,29 +155,38 @@ public class carpenterCannon extends LinearOpMode {
         distance = getDistance(result);
         xOffset = trackAprilTag(result);
 
+        shootPower = testShootDistanceScale(distance);
 
 
-        if (gamepad1.xWasPressed()){
-            turningPower = 0;
-            shootPower = 0;
-        } else if (gamepad1.aWasPressed()){
-            turningPower = 0.1;
-            shootPower = 0.5;
-        } else if (gamepad1.bWasPressed()){
-            turningPower = -0.1;
-            shootPower = 0.35;
-        } else if (gamepad1.yWasPressed()){
-            shootPower = 0.65;
+//        if (gamepad1.xWasPressed()){
+//            turningPower = 0;
+//            shootPower = 0;
+//        } else if (gamepad1.aWasPressed()){
+//            turningPower = 0.1;
+//            shootPower = 0.5;
+//        } else if (gamepad1.bWasPressed()){
+//            turningPower = -0.1;
+//            shootPower = 0.35;
+//        } else if (gamepad1.y){
+//            shootPower = 0.65;
+//        }
+
+
+        //dont use rn
+        if(gamepad1.a){
+            shooterActive = true;
+        }
+        if(gamepad1.x){
+            shooterActive = false;
         }
 
         turn1.setPower(turningPower);
 
-//        shooter1.setPower(shootPower);
-//        shooter2.setPower(shootPower);
         telemetry.addData("Shooter power", shootPower);
         telemetry.addData("Turning Power", turningPower);
         telemetry.addData("Distance", distance);
         telemetry.addData("Target angle", xOffset);
+        telemetry.addData("Fiducial ID", targetedFiducialId);
         telemetry.update();
         }
     }
