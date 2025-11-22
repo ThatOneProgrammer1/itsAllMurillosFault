@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
@@ -21,9 +22,11 @@ public class carpenterCannon extends LinearOpMode {
     private DcMotorEx shooter1;
     private DcMotorEx shooter2;
     private DcMotorEx turn1;
-    private Limelight3A limelight;
-    private final int offset_zone = 8;
+    private Limelight3A slimelight;
+    private final int offset_zone = 4;
     double turningPower = 0.0;
+    double lastOffset = 0.0;
+    int targetedFiducialId;
 
     // method to find our distance when we wanna scale power
     public double getDistance(LLResult result){
@@ -45,7 +48,7 @@ public class carpenterCannon extends LinearOpMode {
 
         }
 
-        return -1;
+        return 0;
     }
 
     // method to find the angle offset of limelight for tracking
@@ -54,10 +57,11 @@ public class carpenterCannon extends LinearOpMode {
         LLResultTypes.FiducialResult tag = getLatestResult(result);
 
         if(tag != null){
+            lastOffset = tag.getTargetXDegrees();
             return tag.getTargetXDegrees();
         }
 
-        return -1;
+        return 0;
     }
 
     public double trackAprilTag(LLResult result){
@@ -68,10 +72,10 @@ public class carpenterCannon extends LinearOpMode {
             turningPower = 0;
         }
         else if(offset > offset_zone){
-            turningPower = 0.35;
+            turningPower = 0.175;
         }
         else if(offset < -offset_zone){
-            turningPower = -0.35;
+            turningPower = -0.175;
         }
 
         return offset;
@@ -101,16 +105,17 @@ public class carpenterCannon extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException{
         // Define motors, make sure Id's match
-        shooter1 = hardwareMap.get(DcMotorEx.class, "shooter1");
-        shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
+//        shooter1 = hardwareMap.get(DcMotorEx.class, "shooter1");
+//        shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
+//
+//        shooter2 = hardwareMap.get(DcMotorEx.class, "shooter2");
+//        shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        shooter2 = hardwareMap.get(DcMotorEx.class, "shooter2");
-        shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        slimelight = hardwareMap.get(Limelight3A.class, "slimelight");
         turn1 = hardwareMap.get(DcMotorEx.class, "turn1");
+        turn1.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
         double shootPower = 0.0;
@@ -118,16 +123,18 @@ public class carpenterCannon extends LinearOpMode {
         double xOffset = 0.0;
         // moved turning power to be class variable btw
 
-        limelight.setPollRateHz(100);
+        slimelight.setPollRateHz(100);
+
+
         waitForStart();
-        limelight.start();
+        slimelight.start();
 
     if (isStopRequested()) return;
 
     while (opModeIsActive()){
 
+        LLResult result = slimelight.getLatestResult();
 
-        LLResult result = limelight.getLatestResult();
         distance = getDistance(result);
         xOffset = trackAprilTag(result);
 
@@ -148,8 +155,8 @@ public class carpenterCannon extends LinearOpMode {
 
         turn1.setPower(turningPower);
 
-        shooter1.setPower(shootPower);
-        shooter2.setPower(shootPower);
+//        shooter1.setPower(shootPower);
+//        shooter2.setPower(shootPower);
         telemetry.addData("Shooter power", shootPower);
         telemetry.addData("Turning Power", turningPower);
         telemetry.addData("Distance", distance);
