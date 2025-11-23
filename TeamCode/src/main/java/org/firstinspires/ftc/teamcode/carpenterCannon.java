@@ -37,10 +37,37 @@ public class carpenterCannon extends LinearOpMode {
     int targetedFiducialId;
     private HashSet<Integer> fiducialIds = new HashSet<>();
 
+
+    // delete these two later
     public double testShootDistanceScale(double distance){
         double power = Range.scale(distance, 30, 115, 0.5, 0.65);
         return Range.clip(power, 0.5, 0.65);
     }
+
+    public double testLinearTurningPower(LLResult result){
+
+        double offset = getXOffset(result);
+
+        double kp = 0.25 / 30;
+        double raw = offset * kp;
+        double clipped = Range.clip(raw, -0.25, 0.25);
+
+        if(Math.abs(offset) < offset_zone){
+            turningPower = 0;
+        }
+        else{
+            if(clipped != 0){
+                turningPower = clipped;
+            }
+        }
+        return offset;
+
+    }
+
+
+
+
+
 
     // method to find our distance when we wanna scale power
     public double getDistance(LLResult result){
@@ -79,6 +106,9 @@ public class carpenterCannon extends LinearOpMode {
         return 0;
     }
 
+
+
+
     public double trackAprilTag(LLResult result){
 
         double offset = getXOffset(result);
@@ -86,11 +116,16 @@ public class carpenterCannon extends LinearOpMode {
         if(Math.abs(offset) < offset_zone){
             turningPower = 0;
         }
-        else if(offset > offset_zone){
-            turningPower = 0.175;
-        }
-        else if(offset < -offset_zone){
-            turningPower = -0.175;
+        else{
+            double scaledOffset = Range.scale(offset, -30, 30, -0.25, 0.25);
+            double clippedOffset = Range.clip(scaledOffset, -0.25, 0.25); // use for power of turn motor
+
+            if(Math.abs(clippedOffset) < 0.075){
+                turningPower = (clippedOffset * 3);
+            }
+            else{
+                turningPower = clippedOffset;
+            }
         }
 
         return offset;
