@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.teamcode.helper.LimelightHelper;
 
 import java.util.HashSet;
 
@@ -28,8 +29,7 @@ public class RedCarpenterCannon extends LinearOpMode {
     private DcMotorEx shooter1;
     private DcMotorEx shooter2;
     private DcMotorEx turn1;
-    private Limelight3A slimelight;
-    private final int offset_zone = 4;
+    private LimelightHelper slimelight;
     double turningPower = 0.0;
     double lastOffset = 0.0;
     int targetedFiducialId;
@@ -41,31 +41,6 @@ public class RedCarpenterCannon extends LinearOpMode {
         double power = Range.scale(distance, 30, 115, 0.5, 0.65);
         return Range.clip(power, 0.5, 0.65);
     }
-
-    public double testLinearTurningPower(LLResult result){
-
-        double offset = getXOffset(result);
-
-        double kp = 0.25 / 30;
-        double raw = offset * kp;
-        double clipped = Range.clip(raw, -0.25, 0.25);
-
-        if(Math.abs(offset) < offset_zone){
-            turningPower = 0;
-        }
-        else{
-            if(clipped != 0){
-                turningPower = clipped;
-            }
-        }
-        return offset;
-
-    }
-
-
-
-
-
 
     // method to find our distance when we wanna scale power
     public double getDistance(LLResult result){
@@ -91,68 +66,12 @@ public class RedCarpenterCannon extends LinearOpMode {
     }
 
     // method to find the angle offset of limelight for tracking
-    public double getXOffset(LLResult result){
-
-        LLResultTypes.FiducialResult tag = getLatestResult(result);
-
-        if(tag != null && tag.getFiducialId() == redFiducialId){
-            targetedFiducialId = tag.getFiducialId();
-            lastOffset = tag.getTargetXDegrees();
-            return tag.getTargetXDegrees();
-        }
-
-        return 0;
-    }
-
-
-
-
-    public double trackAprilTag(LLResult result){
-
-        double offset = getXOffset(result);
-
-        if(Math.abs(offset) < offset_zone){
-            turningPower = 0;
-        }
-        else{
-            double scaledOffset = Range.scale(offset, -30, 30, -0.25, 0.25);
-            double clippedOffset = Range.clip(scaledOffset, -0.25, 0.25); // use for power of turn motor
-
-            if(Math.abs(clippedOffset) < 0.075){
-                turningPower = (clippedOffset * 3);
-            }
-            else{
-                turningPower = clippedOffset;
-            }
-        }
-
-        return offset;
-
-    }
-
-    // same as above
-    public double getYOffset(LLResult result){
-
-        LLResultTypes.FiducialResult tag = getLatestResult(result);
-
-        if(tag != null){
-            return tag.getTargetYDegrees();
-        }
-
-        return 0;
-    }
-
-    public LLResultTypes.FiducialResult getLatestResult(LLResult result){
-        if(result.isValid() && !result.getFiducialResults().isEmpty()){
-            return result.getFiducialResults().get(0);
-        }
-        return null;
-    }
 
 
     @Override
     public void runOpMode() throws InterruptedException{
         // Define motors, make sure Id's match
+
 //        shooter1 = hardwareMap.get(DcMotorEx.class, "shooter1");
 //        shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 //        shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -161,7 +80,8 @@ public class RedCarpenterCannon extends LinearOpMode {
 //        shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 //        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        slimelight = hardwareMap.get(Limelight3A.class, "slimelight");
+        slimelight = new LimelightHelper(hardwareMap);
+
         turn1 = hardwareMap.get(DcMotorEx.class, "turn1");
         turn1.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -169,13 +89,11 @@ public class RedCarpenterCannon extends LinearOpMode {
         double shootPower = 0.0;
         double distance = 0.0;
         double xOffset = 0.0;
-        // moved turning power to be class variable btw
-
-        slimelight.setPollRateHz(100);
 
 
         waitForStart();
-        slimelight.start();
+        slimelight.initializeLimelight();
+
 
         if (isStopRequested()) return;
 
@@ -183,11 +101,11 @@ public class RedCarpenterCannon extends LinearOpMode {
 
         while (opModeIsActive()){
 
-            LLResult result = slimelight.getLatestResult();
+            LLResult result = slimelight.getResult();
 
             distance = getDistance(result);
-            xOffset = trackAprilTag(result);
-
+            turningPower = slimelight.trackAprilTag(result, redFiducialId);
+            xOffset = slimelight.getXOffset(result, redFiducialId);
             shootPower = testShootDistanceScale(distance);
 
 
