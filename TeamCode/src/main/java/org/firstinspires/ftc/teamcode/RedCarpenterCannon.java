@@ -33,7 +33,7 @@ public class RedCarpenterCannon extends LinearOpMode {
     double turningPower = 0.0;
     double lastOffset = 0.0;
     int targetedFiducialId;
-    final int redFiducialId = 20;
+    final int redFiducialId = 24;
 
 
     // delete these two later
