@@ -5,6 +5,7 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.helper.LimelightHelper;
+import org.firstinspires.ftc.teamcode.helper.Shooter;
 
 import java.util.HashSet;
 
@@ -20,8 +22,7 @@ import java.util.HashSet;
 @TeleOp(name = "Red Tele Op")
 public class RedCarpenterCannon extends LinearOpMode {
 
-
-    // fix limelight tracking onto both april tags
+    // test if works
     // fix distance power scaling method
     // separate classes
     // start drivetrain
@@ -30,65 +31,30 @@ public class RedCarpenterCannon extends LinearOpMode {
     private DcMotorEx shooter2;
     private DcMotorEx turn1;
     private LimelightHelper slimelight;
+
+    private Shooter cannon;
     double turningPower = 0.0;
     double lastOffset = 0.0;
     int targetedFiducialId;
     final int redFiducialId = 24;
 
 
-    // delete these two later
-    public double testShootDistanceScale(double distance){
-        double power = Range.scale(distance, 30, 115, 0.5, 0.65);
-        return Range.clip(power, 0.5, 0.65);
-    }
-
-    // method to find our distance when we wanna scale power
-    public double getDistance(LLResult result){
-
-        if(result.isValid() && !result.getFiducialResults().isEmpty()){
-
-            LLResultTypes.FiducialResult tag = result.getFiducialResults().get(0);
-
-            Pose3D tagPose = tag.getTargetPoseCameraSpace();
-
-            Position pos = tagPose.getPosition();
-            Position inches = pos.toUnit(DistanceUnit.INCH);
-
-            double x = inches.x;
-            double y = inches.y;
-            double z = inches.z;
-
-            return Math.sqrt(x*x + y*y + z*z);
-
-        }
-
-        return 0;
-    }
-
-    // method to find the angle offset of limelight for tracking
-
-
     @Override
     public void runOpMode() throws InterruptedException{
         // Define motors, make sure Id's match
 
-//        shooter1 = hardwareMap.get(DcMotorEx.class, "shooter1");
-//        shooter1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
-//
-//        shooter2 = hardwareMap.get(DcMotorEx.class, "shooter2");
-//        shooter2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
-
         slimelight = new LimelightHelper(hardwareMap);
+        cannon = new Shooter(hardwareMap);
 
         turn1 = hardwareMap.get(DcMotorEx.class, "turn1");
         turn1.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
-        double shootPower = 0.0;
         double distance = 0.0;
         double xOffset = 0.0;
+        double yOffset = 0.0;
+        double shootPower = 0.0;
+        double servoPos = 0.0;
 
 
         waitForStart();
@@ -102,11 +68,13 @@ public class RedCarpenterCannon extends LinearOpMode {
         while (opModeIsActive()){
 
             LLResult result = slimelight.getResult();
-
-            distance = getDistance(result);
+            distance = slimelight.getDistance(result);
             turningPower = slimelight.trackAprilTag(result, redFiducialId);
+
             xOffset = slimelight.getXOffset(result, redFiducialId);
-            shootPower = testShootDistanceScale(distance);
+            yOffset = slimelight.getYOffset(result, redFiducialId);
+
+
 
 
 //        if (gamepad1.xWasPressed()){
@@ -122,8 +90,6 @@ public class RedCarpenterCannon extends LinearOpMode {
 //            shootPower = 0.65;
 //        }
 
-
-            //dont use rn
             if(gamepad1.a){
                 shooterActive = true;
             }
@@ -131,13 +97,23 @@ public class RedCarpenterCannon extends LinearOpMode {
                 shooterActive = false;
             }
 
+            if(shooterActive){
+                shootPower = cannon.shoot(distance);
+            }
+            else if (!shooterActive){
+                cannon.stopShooter();
+            }
+
+
+
             turn1.setPower(turningPower);
 
             telemetry.addData("Shooter power", shootPower);
             telemetry.addData("Turning Power", turningPower);
             telemetry.addData("Distance", distance);
-            telemetry.addData("Target angle", xOffset);
+            telemetry.addData("X offset", xOffset);
             telemetry.addData("Fiducial ID", targetedFiducialId);
+            telemetry.addData("Y offset", yOffset);
             telemetry.update();
         }
     }

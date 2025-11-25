@@ -6,6 +6,10 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+
 public class LimelightHelper {
 
     private Limelight3A slimelight;
@@ -48,12 +52,34 @@ public class LimelightHelper {
 
     }
 
-    public double getYOffset(LLResult result){
+    public double getYOffset(LLResult result, int targetedFiducial){
 
         LLResultTypes.FiducialResult tag = getLatestResult(result);
 
-        if(tag != null){
+        if(tag != null && tag.getFiducialId() == targetedFiducial){
             return tag.getTargetYDegrees();
+        }
+
+        return 0;
+    }
+
+    public double getDistance(LLResult result){
+
+        if(result.isValid() && !result.getFiducialResults().isEmpty()){
+
+            LLResultTypes.FiducialResult tag = result.getFiducialResults().get(0);
+
+            Pose3D tagPose = tag.getTargetPoseCameraSpace();
+
+            Position pos = tagPose.getPosition();
+            Position inches = pos.toUnit(DistanceUnit.INCH);
+
+            double x = inches.x;
+            double y = inches.y;
+            double z = inches.z;
+
+            return Math.sqrt(x*x + y*y + z*z);
+
         }
 
         return 0;
