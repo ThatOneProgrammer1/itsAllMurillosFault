@@ -27,11 +27,8 @@ public class RedCarpenterCannon extends LinearOpMode {
     // separate classes
     // start drivetrain
 
-    private DcMotorEx shooter1;
-    private DcMotorEx shooter2;
     private DcMotorEx turn1;
     private LimelightHelper slimelight;
-
     private Shooter cannon;
     double turningPower = 0.0;
     double lastOffset = 0.0;
@@ -97,12 +94,22 @@ public class RedCarpenterCannon extends LinearOpMode {
                 shooterActive = false;
             }
 
+            if(gamepad1.b){
+                cannon.setServo(1);
+            }
+
+            if(gamepad1.y){
+                cannon.setServo(0);
+            }
+
             if(shooterActive){
                 shootPower = cannon.shoot(distance);
             }
             else if (!shooterActive){
                 cannon.stopShooter();
             }
+
+            cannon.logServo(telemetry);
 
 
 
