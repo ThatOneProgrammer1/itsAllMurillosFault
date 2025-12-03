@@ -6,24 +6,28 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Const;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 
-public class LimelightHelper {
+public class Slimelight {
 
     private Limelight3A slimelight;
     private Tracking tracking;
-    private final double offset_zone = 4.0;
-    double distance = 0;
-    double xOffset = 0;
-    double yOffset = 0;
-    double turningPower = 0;
 
+    //consts
+    private final double OFFSET_ZONE = 4.0;
+    private final double MAX_LEFT_TURN = -0.25;
+    private final double MAX_RIGHT_TURN = 0.25;
 
-    public LimelightHelper(HardwareMap hardwareMap){
+    private final double MIN_OFFSET = -30;
+    private final double MAX_OFFSET = 30;
+    private final double MIN_TURN_THRESHOLD = 0.075;
+
+    private double distance = 0;
+
+    public Slimelight(HardwareMap hardwareMap){
         slimelight = hardwareMap.get(Limelight3A.class, "slimelight");
         tracking = new Tracking(hardwareMap);
     }
@@ -32,6 +36,7 @@ public class LimelightHelper {
     public double getDistance(){
         return distance;
     }
+
 
     public double getXOffset(LLResult result, int targetedFiducialId){
 
@@ -49,14 +54,14 @@ public class LimelightHelper {
 
         double offset = getXOffset(result, targetedFiducialId);
 
-        if(Math.abs(offset) < offset_zone){
+        if(Math.abs(offset) < OFFSET_ZONE){
             return 0;
         }
         else{
-            double scaledOffset = Range.scale(offset, -30, 30, -0.25, 0.25);
-            double clippedOffset = Range.clip(scaledOffset, -0.25, 0.25); // use for power of turn motor
+            double scaledOffset = Range.scale(offset, MIN_OFFSET, MAX_OFFSET, MAX_LEFT_TURN , MAX_RIGHT_TURN);
+            double clippedOffset = Range.clip(scaledOffset, MAX_LEFT_TURN, MAX_RIGHT_TURN); // use for power of turn motor
 
-            if(Math.abs(clippedOffset) < 0.075){
+            if(Math.abs(clippedOffset) < MIN_TURN_THRESHOLD){
                 return (clippedOffset * 3);
             }
             else{
@@ -65,6 +70,7 @@ public class LimelightHelper {
         }
 
     }
+
 
     public double getYOffset(LLResult result, int targetedFiducial){
 
@@ -76,6 +82,7 @@ public class LimelightHelper {
 
         return 0;
     }
+
 
     public double getDistance(LLResult result){
 
@@ -99,6 +106,7 @@ public class LimelightHelper {
         return 0;
     }
 
+
     public LLResultTypes.FiducialResult getLatestResult(LLResult result){
         if(result.isValid() && !result.getFiducialResults().isEmpty()){
             return result.getFiducialResults().get(0);
@@ -106,22 +114,25 @@ public class LimelightHelper {
         return null;
     }
 
+
     public void initializeLimelight(){
         slimelight.setPollRateHz(100);
         slimelight.start();
     }
 
+
     public LLResult getResult(){
         return slimelight.getLatestResult();
     }
 
-    public void Run(Telemetry telemetry, int fiducialId){
+
+    public void update(Telemetry telemetry, int fiducialId){
         LLResult result = getResult();
 
         distance = getDistance(result);
-        xOffset = getXOffset(result, fiducialId);
-        yOffset = getYOffset(result, fiducialId);
-        turningPower = trackAprilTag(result, fiducialId);
+        double xOffset = getXOffset(result, fiducialId);
+        double yOffset = getYOffset(result, fiducialId);
+        double turningPower = trackAprilTag(result, fiducialId);
 
         tracking.turnMotor(turningPower);
 

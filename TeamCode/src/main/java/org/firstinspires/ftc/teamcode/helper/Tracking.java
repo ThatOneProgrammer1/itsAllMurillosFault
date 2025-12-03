@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Tracking {
 
-    DcMotorEx turn1;
+    private DcMotorEx turn1;
     public Tracking(HardwareMap hw){
         turn1 = hw.get(DcMotorEx.class, "turn1");
         turn1.setDirection(DcMotorSimple.Direction.REVERSE);

@@ -1,22 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.teamcode.helper.LimelightHelper;
-import org.firstinspires.ftc.teamcode.helper.Shooter;
-
-import java.util.HashSet;
+import org.firstinspires.ftc.teamcode.helper.Slimelight;
+import org.firstinspires.ftc.teamcode.helper.Cannon;
 
 
 @TeleOp(name = "Blue Tele Op")
@@ -28,8 +19,8 @@ public class BlueCarpenterCannon extends LinearOpMode {
     // start drivetrain
 
     private DcMotorEx turn1;
-    private LimelightHelper slimelight;
-    private Shooter cannon;
+    private Slimelight slimelight;
+    private Cannon cannon;
     double turningPower = 0.0;
     double lastOffset = 0.0;
     int targetedFiducialId;
@@ -40,8 +31,8 @@ public class BlueCarpenterCannon extends LinearOpMode {
     public void runOpMode() throws InterruptedException{
         // Define motors, make sure Id's match
 
-        slimelight = new LimelightHelper(hardwareMap);
-        cannon = new Shooter(hardwareMap);
+        slimelight = new Slimelight(hardwareMap);
+        cannon = new Cannon(hardwareMap);
 
         turn1 = hardwareMap.get(DcMotorEx.class, "turn1");
         turn1.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -94,13 +85,6 @@ public class BlueCarpenterCannon extends LinearOpMode {
             shooterActive = false;
         }
 
-        if(gamepad1.b){
-            cannon.setServo(1);
-        }
-
-        if(gamepad1.y){
-            cannon.setServo(0);
-        }
 
         if(shooterActive){
             shootPower = cannon.shoot(distance);
@@ -108,8 +92,6 @@ public class BlueCarpenterCannon extends LinearOpMode {
         else if (!shooterActive){
             cannon.stopShooter();
         }
-
-        cannon.logServo(telemetry);
 
 
 
