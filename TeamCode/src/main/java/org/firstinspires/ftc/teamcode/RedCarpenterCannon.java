@@ -22,17 +22,14 @@ import java.util.HashSet;
 @TeleOp(name = "Red Tele Op")
 public class RedCarpenterCannon extends LinearOpMode {
 
-    // test if works
-    // fix distance power scaling method
-    // separate classes
-    // start drivetrain
 
-    private DcMotorEx turn1;
+    // to do
+    // central telemetry class
+    // test red shooter
+    // 
+
     private LimelightHelper slimelight;
     private Shooter cannon;
-    double turningPower = 0.0;
-    double lastOffset = 0.0;
-    int targetedFiducialId;
     final int redFiducialId = 24;
 
 
@@ -42,17 +39,6 @@ public class RedCarpenterCannon extends LinearOpMode {
 
         slimelight = new LimelightHelper(hardwareMap);
         cannon = new Shooter(hardwareMap);
-
-        turn1 = hardwareMap.get(DcMotorEx.class, "turn1");
-        turn1.setDirection(DcMotorSimple.Direction.REVERSE);
-
-
-        double distance = 0.0;
-        double xOffset = 0.0;
-        double yOffset = 0.0;
-        double shootPower = 0.0;
-        double servoPos = 0.0;
-
 
         waitForStart();
         slimelight.initializeLimelight();
@@ -64,28 +50,9 @@ public class RedCarpenterCannon extends LinearOpMode {
 
         while (opModeIsActive()){
 
-            LLResult result = slimelight.getResult();
-            distance = slimelight.getDistance(result);
-            turningPower = slimelight.trackAprilTag(result, redFiducialId);
+            slimelight.Run(telemetry, redFiducialId);
+            double distance = slimelight.getDistance();
 
-            xOffset = slimelight.getXOffset(result, redFiducialId);
-            yOffset = slimelight.getYOffset(result, redFiducialId);
-
-
-
-
-//        if (gamepad1.xWasPressed()){
-//            turningPower = 0;
-//            shootPower = 0;
-//        } else if (gamepad1.aWasPressed()){
-//            turningPower = 0.1;
-//            shootPower = 0.5;
-//        } else if (gamepad1.bWasPressed()){
-//            turningPower = -0.1;
-//            shootPower = 0.35;
-//        } else if (gamepad1.y){
-//            shootPower = 0.65;
-//        }
 
             if(gamepad1.a){
                 shooterActive = true;
@@ -94,34 +61,8 @@ public class RedCarpenterCannon extends LinearOpMode {
                 shooterActive = false;
             }
 
-            if(gamepad1.b){
-                cannon.setServo(1);
-            }
+            cannon.handleShoot(shooterActive, distance, telemetry);
 
-            if(gamepad1.y){
-                cannon.setServo(0);
-            }
-
-            if(shooterActive){
-                shootPower = cannon.shoot(distance);
-            }
-            else if (!shooterActive){
-                cannon.stopShooter();
-            }
-
-            cannon.logServo(telemetry);
-
-
-
-            turn1.setPower(turningPower);
-
-            telemetry.addData("Shooter power", shootPower);
-            telemetry.addData("Turning Power", turningPower);
-            telemetry.addData("Distance", distance);
-            telemetry.addData("X offset", xOffset);
-            telemetry.addData("Fiducial ID", targetedFiducialId);
-            telemetry.addData("Y offset", yOffset);
-            telemetry.update();
         }
     }
 

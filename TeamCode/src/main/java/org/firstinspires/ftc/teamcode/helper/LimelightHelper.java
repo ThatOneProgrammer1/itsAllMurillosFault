@@ -6,6 +6,8 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Const;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
@@ -13,10 +15,22 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 public class LimelightHelper {
 
     private Limelight3A slimelight;
+    private Tracking tracking;
     private final double offset_zone = 4.0;
+    double distance = 0;
+    double xOffset = 0;
+    double yOffset = 0;
+    double turningPower = 0;
+
 
     public LimelightHelper(HardwareMap hardwareMap){
         slimelight = hardwareMap.get(Limelight3A.class, "slimelight");
+        tracking = new Tracking(hardwareMap);
+    }
+
+
+    public double getDistance(){
+        return distance;
     }
 
     public double getXOffset(LLResult result, int targetedFiducialId){
@@ -99,6 +113,23 @@ public class LimelightHelper {
 
     public LLResult getResult(){
         return slimelight.getLatestResult();
+    }
+
+    public void Run(Telemetry telemetry, int fiducialId){
+        LLResult result = getResult();
+
+        distance = getDistance(result);
+        xOffset = getXOffset(result, fiducialId);
+        yOffset = getYOffset(result, fiducialId);
+        turningPower = trackAprilTag(result, fiducialId);
+
+        tracking.turnMotor(turningPower);
+
+        telemetry.addData("Distance", distance);
+        telemetry.addData("X offset", xOffset);
+        telemetry.addData("Fiducial ID", fiducialId);
+        telemetry.addData("Y offset", yOffset);
+        telemetry.update();
     }
 
 }

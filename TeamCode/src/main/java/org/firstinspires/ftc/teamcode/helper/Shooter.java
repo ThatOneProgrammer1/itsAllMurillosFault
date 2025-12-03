@@ -70,6 +70,8 @@ public class Shooter {
 
         shooterServo.setPosition(servoPos);
 
+        shootPower = basePower;
+
         return basePower;
     }
 
@@ -80,11 +82,15 @@ public class Shooter {
     }
 
 
-
-
     public void stopShooter(){
         shooter1.setPower(0);
         shooter2.setPower(0);
+    }
+
+    public void handleShoot(boolean shooterActive, double distance, Telemetry telemetry){
+        if(shooterActive) shoot(distance);
+        else stopShooter();
+        telemetry.addData("Shoot Power", shootPower);
     }
 
     public boolean isShooterReady(){
