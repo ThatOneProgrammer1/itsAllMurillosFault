@@ -78,10 +78,10 @@ public class Cannon implements Shooter {
     }
 
     @Override
-    public void handleShoot(boolean shooterActive, double distance, Telemetry telemetry){
+    public void handleShoot(boolean shooterActive, double distance, TelemetryLogger telemetryLogger){
         if(shooterActive) shoot(distance);
         else stopShooter();
-        telemetry.addData("Shoot Power", shootPower);
+        telemetryLogger.logShootPower(shootPower);
     }
 
     @Override

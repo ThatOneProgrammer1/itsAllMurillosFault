@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.helper.Slimelight;
 import org.firstinspires.ftc.teamcode.helper.Cannon;
+import org.firstinspires.ftc.teamcode.helper.TelemetryLogger;
 
 
 @TeleOp(name = "Red Tele Op")
@@ -18,15 +19,16 @@ public class RedCarpenterCannon extends LinearOpMode {
 
     private Slimelight slimelight;
     private Cannon cannon;
+    private TelemetryLogger telemetryLogger;
     final int redFiducialId = 24;
 
 
     @Override
     public void runOpMode() throws InterruptedException{
-        // Define motors, make sure Id's match
 
         slimelight = new Slimelight(hardwareMap);
         cannon = new Cannon(hardwareMap);
+        telemetryLogger = new TelemetryLogger(telemetry);
 
         waitForStart();
         slimelight.initializeLimelight();
@@ -36,7 +38,7 @@ public class RedCarpenterCannon extends LinearOpMode {
 
         while (opModeIsActive()){
 
-            slimelight.update(telemetry, redFiducialId);
+            slimelight.update(telemetryLogger, redFiducialId);
             double distance = slimelight.getDistance();
 
 
@@ -47,7 +49,7 @@ public class RedCarpenterCannon extends LinearOpMode {
                 shooterActive = false;
             }
 
-            cannon.handleShoot(shooterActive, distance, telemetry);
+            cannon.handleShoot(shooterActive, distance, telemetryLogger);
 
         }
     }

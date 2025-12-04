@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.helper.intefaces;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.helper.TelemetryLogger;
 
 public interface Shooter {
 
@@ -15,6 +16,6 @@ public interface Shooter {
     boolean isShooterReady();
     double shoot(double distance);
     void stopShooter();
-    void handleShoot(boolean shooterActive, double distance, Telemetry telemetry);
+    void handleShoot(boolean shooterActive, double distance, TelemetryLogger telemetryLogger);
 
 }

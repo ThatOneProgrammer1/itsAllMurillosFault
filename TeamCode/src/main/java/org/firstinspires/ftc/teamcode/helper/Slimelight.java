@@ -5,8 +5,6 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
@@ -126,7 +124,7 @@ public class Slimelight {
     }
 
 
-    public void update(Telemetry telemetry, int fiducialId){
+    public void update(TelemetryLogger telemetryLogger, int fiducialId){
         LLResult result = getResult();
 
         distance = getDistance(result);
@@ -135,12 +133,9 @@ public class Slimelight {
         double turningPower = trackAprilTag(result, fiducialId);
 
         tracking.turnMotor(turningPower);
+        telemetryLogger.logLimelight(distance, xOffset, fiducialId, yOffset);
 
-        telemetry.addData("Distance", distance);
-        telemetry.addData("X offset", xOffset);
-        telemetry.addData("Fiducial ID", fiducialId);
-        telemetry.addData("Y offset", yOffset);
-        telemetry.update();
+
     }
 
 }
