@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.susbystems.teleops;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.susbystems.color.ColorDet;
 import org.firstinspires.ftc.teamcode.susbystems.misc.Slimelight;
 import org.firstinspires.ftc.teamcode.susbystems.shooter.Cannon;
 import org.firstinspires.ftc.teamcode.susbystems.misc.TelemetryLogger;
@@ -20,6 +21,7 @@ public class BlueCarpenterCannon extends LinearOpMode {
     private Slimelight slimelight;
     private Cannon cannon;
     private TelemetryLogger telemetryLogger;
+    private ColorDet color;
     final int blueFiducialId = 20;
 
 
@@ -28,6 +30,7 @@ public class BlueCarpenterCannon extends LinearOpMode {
 
         slimelight = new Slimelight(hardwareMap);
         cannon = new Cannon(hardwareMap);
+        color = new ColorDet(hardwareMap);
         telemetryLogger = new TelemetryLogger(telemetry);
 
         waitForStart();
@@ -49,6 +52,7 @@ public class BlueCarpenterCannon extends LinearOpMode {
                 shooterActive = false;
             }
 
+            color.detectColor(telemetryLogger);
             cannon.handleShoot(shooterActive, distance, telemetryLogger);
 
         }

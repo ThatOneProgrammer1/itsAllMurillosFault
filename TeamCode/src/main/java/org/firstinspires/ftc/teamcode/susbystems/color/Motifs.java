@@ -7,15 +7,6 @@ import java.util.Map;
 
 public class Motifs {
 
-    List<ColorDet.DetectedColor> heldColors = new ArrayList<>();
-
-    public List<ColorDet.DetectedColor> getHeldColors(){
-        return heldColors;
-    }
-
-    public void addColor(ColorDet.DetectedColor color){
-        heldColors.add(color);
-    }
     Map<Integer, List<ColorDet.DetectedColor>> motifs = Map.of(
 
             21, Arrays.asList(

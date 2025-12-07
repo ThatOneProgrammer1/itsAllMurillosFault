@@ -3,6 +3,11 @@ package org.firstinspires.ftc.teamcode.susbystems.color;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.susbystems.misc.TelemetryLogger;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class ColorDet {
 
     private ColorSensor sensor;
@@ -18,7 +23,11 @@ public class ColorDet {
         UNKNOWN
     }
 
-    public DetectedColor detectColor(){
+    List<DetectedColor> heldColors = new ArrayList<>();
+
+    public DetectedColor detectColor(TelemetryLogger telemetryLogger){
+
+        DetectedColor color = DetectedColor.UNKNOWN;
 
         android.graphics.Color.RGBToHSV(
                 sensor.red() * 8,
@@ -30,13 +39,15 @@ public class ColorDet {
         float hue = hsv[0];
 
         if (hue > 85 && hue < 200) {
-            return DetectedColor.GREEN;
+            color = DetectedColor.GREEN;
         }
         else if (hue > 200 && hue < 300){
-            return DetectedColor.PURPLE;
+            color = DetectedColor.PURPLE;
         }
 
-        return DetectedColor.UNKNOWN;
+        telemetryLogger.logColor(color);
+
+        return color;
 
     }
 
