@@ -1,11 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.susbystems.teleops;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.helper.Slimelight;
-import org.firstinspires.ftc.teamcode.helper.Cannon;
-import org.firstinspires.ftc.teamcode.helper.TelemetryLogger;
+import org.firstinspires.ftc.teamcode.susbystems.misc.Slimelight;
+import org.firstinspires.ftc.teamcode.susbystems.shooter.Cannon;
+import org.firstinspires.ftc.teamcode.susbystems.misc.TelemetryLogger;
 
 
 @TeleOp(name = "Red Tele Op")
@@ -21,7 +21,6 @@ public class RedCarpenterCannon extends LinearOpMode {
     private Cannon cannon;
     private TelemetryLogger telemetryLogger;
     final int redFiducialId = 24;
-
 
     @Override
     public void runOpMode() throws InterruptedException{

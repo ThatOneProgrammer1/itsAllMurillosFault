@@ -1,22 +1,32 @@
-package org.firstinspires.ftc.teamcode.helper;
+package org.firstinspires.ftc.teamcode.susbystems.shooter;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.helper.intefaces.Shooter;
+import org.firstinspires.ftc.teamcode.susbystems.misc.TelemetryLogger;
 
-public class Cannon implements Shooter {
+public class Cannon  {
 
     private DcMotorEx shooter1;
     private DcMotorEx shooter2;
     private Servo shooterServo;
 
+
     private double basePower = 0.0;
     private double servoPos = 0.0;
     private double shootPower = 0.0;
+
+    // constants
+    private final double DEADZONE = 250;
+    private final double BASE_VELOCITY = 6000;
+    private final double MAX_POWER = 0.625;
+    private final double MIN_POWER = 0.475;
+    private final double MIN_SERVO_POS = 0.1;
+    private final double MAX_SERVO_POS = 0.6;
+    private final double MIN_DISTANCE = 30;
+    private final double MAX_DISTANCE = 115;
 
     public Cannon(HardwareMap hardwareMap){
 
@@ -53,8 +63,6 @@ public class Cannon implements Shooter {
         return servoPos;
     }
 
-
-    @Override
     public double shoot(double distance){
 
         basePower = scalePower(distance);
@@ -70,21 +78,17 @@ public class Cannon implements Shooter {
         return basePower;
     }
 
-
-    @Override
     public void stopShooter(){
         shooter1.setPower(0);
         shooter2.setPower(0);
     }
 
-    @Override
     public void handleShoot(boolean shooterActive, double distance, TelemetryLogger telemetryLogger){
         if(shooterActive) shoot(distance);
         else stopShooter();
         telemetryLogger.logShootPower(shootPower);
     }
 
-    @Override
     public boolean isShooterReady(){
 
         double expectedVelocity = BASE_VELOCITY * basePower;
