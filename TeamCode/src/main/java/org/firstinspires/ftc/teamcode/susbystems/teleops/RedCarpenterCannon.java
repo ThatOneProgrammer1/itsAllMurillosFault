@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.susbystems.teleops;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.susbystems.color.ColorDet;
-import org.firstinspires.ftc.teamcode.susbystems.misc.Slimelight;
+import org.firstinspires.ftc.teamcode.susbystems.intake.Intake;
+import org.firstinspires.ftc.teamcode.susbystems.limelight.Slimelight;
 import org.firstinspires.ftc.teamcode.susbystems.shooter.Cannon;
 import org.firstinspires.ftc.teamcode.susbystems.misc.TelemetryLogger;
 
@@ -21,7 +21,7 @@ public class RedCarpenterCannon extends LinearOpMode {
     private Slimelight slimelight;
     private Cannon cannon;
     private TelemetryLogger telemetryLogger;
-    private ColorDet color;
+    private Intake intake;
     final int redFiducialId = 24;
 
     @Override
@@ -29,8 +29,8 @@ public class RedCarpenterCannon extends LinearOpMode {
 
         slimelight = new Slimelight(hardwareMap);
         cannon = new Cannon(hardwareMap);
-        color = new ColorDet(hardwareMap);
         telemetryLogger = new TelemetryLogger(telemetry);
+        intake = new Intake(hardwareMap);
 
 
         waitForStart();
@@ -38,22 +38,27 @@ public class RedCarpenterCannon extends LinearOpMode {
 
         if (isStopRequested()) return;
         boolean shooterActive = false;
+        boolean intakeActive = false;
 
         while (opModeIsActive()){
 
             slimelight.update(telemetryLogger, redFiducialId);
             double distance = slimelight.getDistance();
 
-
             if(gamepad1.a){
                 shooterActive = true;
             }
             if(gamepad1.x){
                 shooterActive = false;
+                intakeActive = false;
+            }
+            if(gamepad1.y){
+                intakeActive = true;
             }
 
-            color.detectColor(telemetryLogger);
+            intake.liftBall(cannon, intakeActive, telemetryLogger);
             cannon.handleShoot(shooterActive, distance, telemetryLogger);
+
 
         }
     }

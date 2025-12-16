@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.susbystems.misc;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.susbystems.color.ColorDet;
 
 public class TelemetryLogger {
 
@@ -25,22 +24,6 @@ public class TelemetryLogger {
     public void logShootPower(double power){
         telemetry.addData("Shoot Power", power);
         telemetry.update();
-    }
-
-    public void logColor(ColorDet.DetectedColor color){
-        String name = "Unknown";
-
-        if(color == ColorDet.DetectedColor.GREEN){
-            name = "Green";
-        }
-        else if(color == ColorDet.DetectedColor.PURPLE){
-            name = "Purple";
-        }
-
-        telemetry.addData("Detected Color", name);
-        telemetry.update();
-
-
     }
 
 

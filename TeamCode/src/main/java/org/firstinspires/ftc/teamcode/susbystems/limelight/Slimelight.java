@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.susbystems.misc;
+package org.firstinspires.ftc.teamcode.susbystems.limelight;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.teamcode.susbystems.misc.TelemetryLogger;
+import org.firstinspires.ftc.teamcode.susbystems.misc.Tracking;
 
 public class Slimelight {
 
