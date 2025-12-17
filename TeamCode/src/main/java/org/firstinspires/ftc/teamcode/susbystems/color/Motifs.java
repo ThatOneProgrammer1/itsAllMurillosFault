@@ -16,7 +16,7 @@ public class Motifs {
     public void addColor(ColorDet.DetectedColor color){
         heldColors.add(color);
     }
-    Map<Integer, List<ColorDet.DetectedColor>> motifs = Map.of(
+    public static Map<Integer, List<ColorDet.DetectedColor>> motifs = Map.of(
 
             21, Arrays.asList(
                     ColorDet.DetectedColor.PURPLE,
@@ -38,6 +38,10 @@ public class Motifs {
             )
 
     );
+
+    public static Map<Integer, List<ColorDet.DetectedColor>> getMotifs(){
+        return motifs;
+    }
 
 
     public void organizeColorShoot(int motifId){

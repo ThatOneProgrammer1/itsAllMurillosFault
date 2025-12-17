@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.teamcode.susbystems.color.ColorDet;
 import org.firstinspires.ftc.teamcode.susbystems.misc.TelemetryLogger;
 import org.firstinspires.ftc.teamcode.susbystems.misc.Tracking;
 
@@ -24,6 +25,8 @@ public class Slimelight {
     private final double MIN_OFFSET = -30;
     private final double MAX_OFFSET = 30;
     private final double MIN_TURN_THRESHOLD = 0.075;
+    private final int BLUE_ID = 20;
+    private final int RED_ID = 24;
 
     private double distance = 0;
 
@@ -40,7 +43,7 @@ public class Slimelight {
 
     public double getXOffset(LLResult result, int targetedFiducialId){
 
-        LLResultTypes.FiducialResult tag = getLatestResult(result);
+        LLResultTypes.FiducialResult tag = getResultForTracking(result, targetedFiducialId);
 
         if(tag != null && tag.getFiducialId() == targetedFiducialId){
             return tag.getTargetXDegrees();
@@ -72,23 +75,11 @@ public class Slimelight {
     }
 
 
-    public double getYOffset(LLResult result, int targetedFiducial){
-
-        LLResultTypes.FiducialResult tag = getLatestResult(result);
-
-        if(tag != null && tag.getFiducialId() == targetedFiducial){
-            return tag.getTargetYDegrees();
-        }
-
-        return 0;
-    }
-
-
-    public double getDistance(LLResult result){
+    public double getDistance(LLResult result, int targetId){
 
         if(result.isValid() && !result.getFiducialResults().isEmpty()){
 
-            LLResultTypes.FiducialResult tag = result.getFiducialResults().get(0);
+            LLResultTypes.FiducialResult tag = getResultForTracking(result, targetId);
 
             Pose3D tagPose = tag.getTargetPoseCameraSpace();
 
@@ -114,6 +105,17 @@ public class Slimelight {
         return null;
     }
 
+    public LLResultTypes.FiducialResult getResultForTracking(LLResult result, int targetId){
+        if(result.isValid() && !result.getFiducialResults().isEmpty()){
+            for(LLResultTypes.FiducialResult res: result.getFiducialResults()){
+                if(res.getFiducialId() == targetId){
+                    return res;
+                }
+            }
+        }
+        return null;
+    }
+
 
     public void initializeLimelight(){
         slimelight.setPollRateHz(100);
@@ -129,15 +131,26 @@ public class Slimelight {
     public void update(TelemetryLogger telemetryLogger, int fiducialId){
         LLResult result = getResult();
 
-        distance = getDistance(result);
+        distance = getDistance(result, fiducialId);
         double xOffset = getXOffset(result, fiducialId);
-        double yOffset = getYOffset(result, fiducialId);
         double turningPower = trackAprilTag(result, fiducialId);
 
         tracking.turnMotor(turningPower);
-        telemetryLogger.logLimelight(distance, xOffset, fiducialId, yOffset);
+        telemetryLogger.logLimelight(distance, xOffset, fiducialId);
 
 
+    }
+
+    public boolean fetchMotifId(ColorDet colorDet){
+        LLResultTypes.FiducialResult res = getLatestResult(getResult());
+
+        if(res == null || res.getFiducialId() == RED_ID || res.getFiducialId() == BLUE_ID) {
+            return false;
+        }
+        else{
+            colorDet.getMotif(res.getFiducialId());
+            return true;
+        }
     }
 
 }

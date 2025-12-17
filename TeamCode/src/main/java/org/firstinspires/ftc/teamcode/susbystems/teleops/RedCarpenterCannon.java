@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.susbystems.teleops;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.susbystems.color.ColorDet;
 import org.firstinspires.ftc.teamcode.susbystems.intake.Intake;
 import org.firstinspires.ftc.teamcode.susbystems.limelight.Slimelight;
 import org.firstinspires.ftc.teamcode.susbystems.shooter.Cannon;
@@ -22,6 +23,7 @@ public class RedCarpenterCannon extends LinearOpMode {
     private Cannon cannon;
     private TelemetryLogger telemetryLogger;
     private Intake intake;
+    private ColorDet colorDet;
     final int redFiducialId = 24;
 
     @Override
@@ -31,6 +33,8 @@ public class RedCarpenterCannon extends LinearOpMode {
         cannon = new Cannon(hardwareMap);
         telemetryLogger = new TelemetryLogger(telemetry);
         intake = new Intake(hardwareMap);
+        colorDet = new ColorDet(hardwareMap);
+
 
 
         waitForStart();
@@ -39,6 +43,7 @@ public class RedCarpenterCannon extends LinearOpMode {
         if (isStopRequested()) return;
         boolean shooterActive = false;
         boolean intakeActive = false;
+        boolean seenMotif = false;
 
         while (opModeIsActive()){
 
@@ -55,9 +60,28 @@ public class RedCarpenterCannon extends LinearOpMode {
             if(gamepad1.y){
                 intakeActive = true;
             }
+            boolean shooterReady = cannon.isShooterReady();
 
-            intake.liftBall(cannon, intakeActive, telemetryLogger);
             cannon.handleShoot(shooterActive, distance, telemetryLogger);
+            seenMotif = slimelight.fetchMotifId(colorDet);
+
+            if(shooterActive && seenMotif && intakeActive && shooterReady){
+                int servoIndex = colorDet.shootNextBall();
+                if(servoIndex != -1){
+                    intake.liftBall(servoIndex);
+                }
+            }
+
+            if (!seenMotif){
+                telemetryLogger.log("Motif Tracked", "False");
+            }else if(!colorDet.ballColorsMatchMotif()){
+                telemetryLogger.log("Motif Tracked", "True");
+                telemetryLogger.log("Balls in motif order", "False");
+            }
+            else{
+                telemetryLogger.log("Motif Tracked", "True");
+                telemetryLogger.log("Balls in motif order", "True");
+            }
 
 
         }

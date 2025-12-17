@@ -36,8 +36,6 @@ public class Cannon  {
         shooter2 = hardwareMap.get(DcMotorEx.class, "shooter2");
         shooter2.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
-        shooterServo = hardwareMap.get(Servo.class, "servo1");
-
     }
 
     public double scalePower(double distance){
@@ -90,6 +88,7 @@ public class Cannon  {
     }
 
     public boolean isShooterReady(){
+        if(basePower < 0.1) return false;
 
         double expectedVelocity = BASE_VELOCITY * basePower;
         //avg velocity
