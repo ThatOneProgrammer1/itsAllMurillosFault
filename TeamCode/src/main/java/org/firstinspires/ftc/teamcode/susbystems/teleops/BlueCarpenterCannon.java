@@ -28,14 +28,13 @@ public class BlueCarpenterCannon extends LinearOpMode {
         telemetryLogger = new TelemetryLogger(telemetry);
         intake = new Intake(hardwareMap);
         colorDet = new ColorDet(hardwareMap);
-        
+
 
         waitForStart();
         slimelight.initializeLimelight();
 
         if (isStopRequested()) return;
         boolean shooterActive = false;
-        boolean intakeActive = false;
         boolean seenMotif = false;
 
         while (opModeIsActive()){
@@ -48,17 +47,13 @@ public class BlueCarpenterCannon extends LinearOpMode {
             }
             if(gamepad1.x){
                 shooterActive = false;
-                intakeActive = false;
-            }
-            if(gamepad1.y){
-                intakeActive = true;
             }
             boolean shooterReady = cannon.isShooterReady();
 
             cannon.handleShoot(shooterActive, distance, telemetryLogger);
             seenMotif = slimelight.fetchMotifId(colorDet);
 
-            if(shooterActive && seenMotif && intakeActive && shooterReady){
+            if(shooterActive && seenMotif && shooterReady){
                 int servoIndex = colorDet.shootNextBall();
                 if(servoIndex != -1){
                     intake.liftBall(servoIndex);

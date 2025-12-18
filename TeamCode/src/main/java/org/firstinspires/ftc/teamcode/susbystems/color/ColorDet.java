@@ -114,10 +114,19 @@ public class ColorDet {
         return -1;
     }
 
+
     public DetectedColor detectColor(SensorPair<ColorSensor, ColorSensor> sensorPair){
+        
         double red = (double) (sensorPair.first.red() + sensorPair.second.red()) / 2;
         double blue = (double) (sensorPair.first.blue() + sensorPair.second.blue()) / 2;
         double green = (double) (sensorPair.first.green() + sensorPair.second.green()) / 2;
+
+        if(red + blue > green){
+            return DetectedColor.GREEN;
+        }
+        else{
+            return DetectedColor.PURPLE;
+        }
     }
 
 
