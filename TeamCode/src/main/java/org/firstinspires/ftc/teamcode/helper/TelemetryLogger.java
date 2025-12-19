@@ -26,6 +26,11 @@ public class TelemetryLogger {
         telemetry.update();
     }
 
+    public void logState(String state) {
+        telemetry.addData("Index state", state);
+        telemetry.update();
+    }
+
 
 
 

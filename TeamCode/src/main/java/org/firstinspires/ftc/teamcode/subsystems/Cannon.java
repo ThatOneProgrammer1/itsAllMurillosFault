@@ -1,11 +1,11 @@
-package org.firstinspires.ftc.teamcode.helper;
+package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.helper.TelemetryLogger;
 import org.firstinspires.ftc.teamcode.helper.intefaces.Shooter;
 
 public class Cannon implements Shooter {
@@ -31,15 +31,7 @@ public class Cannon implements Shooter {
     }
 
     public double scalePower(double distance){
-
-        if(distance != 0){
-            double power = Range.scale(distance, MIN_DISTANCE, MAX_DISTANCE, MIN_POWER, MAX_POWER);
-            shootPower = Range.clip(power, MIN_POWER, MAX_POWER);
-            return shootPower;
-        }
-
-        return shootPower;
-
+        return 1.0;
     }
 
     public double scaleServoPos(double distance){

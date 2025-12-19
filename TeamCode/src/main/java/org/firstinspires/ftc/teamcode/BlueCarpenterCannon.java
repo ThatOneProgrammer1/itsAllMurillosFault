@@ -7,7 +7,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.helper.Slimelight;
-import org.firstinspires.ftc.teamcode.helper.Cannon;
+import org.firstinspires.ftc.teamcode.helper.TelemetryLogger;
+import org.firstinspires.ftc.teamcode.subsystems.Cannon;
+import org.firstinspires.ftc.teamcode.subsystems.indexing;
 
 
 @TeleOp(name = "Blue Tele Op")
@@ -18,12 +20,14 @@ public class BlueCarpenterCannon extends LinearOpMode {
     // separate classes
     // start drivetrain
 
+    private TelemetryLogger telemetryLogger;
     private DcMotorEx turn1;
     private Slimelight slimelight;
     private Cannon cannon;
     double turningPower = 0.0;
     double lastOffset = 0.0;
     int targetedFiducialId;
+    private indexing indexer = new indexing();
     final int blueFiducialId = 20;
 
 
@@ -33,6 +37,7 @@ public class BlueCarpenterCannon extends LinearOpMode {
 
         slimelight = new Slimelight(hardwareMap);
         cannon = new Cannon(hardwareMap);
+        telemetryLogger = new TelemetryLogger(telemetry);
 
         turn1 = hardwareMap.get(DcMotorEx.class, "turn1");
         turn1.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -52,31 +57,34 @@ public class BlueCarpenterCannon extends LinearOpMode {
     if (isStopRequested()) return;
 
     boolean shooterActive = false;
+    double TICKS_PER_DEG = 1;
+    double MAX_ANGLE = 270;
+    double MIN_ANGLE = -270;
+    double turretTarget = 0.0;
+    double kP = 4;
 
     while (opModeIsActive()){
+        indexer.update();
 
+        if (gamepad1.rightBumperWasPressed()) {
+            indexer.startShooting();
+        }
         LLResult result = slimelight.getResult();
         distance = slimelight.getDistance(result);
         turningPower = slimelight.trackAprilTag(result, blueFiducialId);
+        if (result.getFiducialResults().get(0).getFiducialId() == blueFiducialId) {
+            turretTarget = turn1.getCurrentPosition() + result.getTxNC() * TICKS_PER_DEG;
+            if (turretTarget > MAX_ANGLE) {
+                turretTarget -= 360 * TICKS_PER_DEG;
+            } else if (turretTarget < MIN_ANGLE) {
+                turretTarget += 360 * TICKS_PER_DEG;
+            }
+        }
+
+        turningPower = kP * (turretTarget - turn1.getCurrentPosition());
 
         xOffset = slimelight.getXOffset(result, blueFiducialId);
         yOffset = slimelight.getYOffset(result, blueFiducialId);
-
-
-
-
-//        if (gamepad1.xWasPressed()){
-//            turningPower = 0;
-//            shootPower = 0;
-//        } else if (gamepad1.aWasPressed()){
-//            turningPower = 0.1;
-//            shootPower = 0.5;
-//        } else if (gamepad1.bWasPressed()){
-//            turningPower = -0.1;
-//            shootPower = 0.35;
-//        } else if (gamepad1.y){
-//            shootPower = 0.65;
-//        }
 
         if(gamepad1.a){
             shooterActive = true;
@@ -87,26 +95,16 @@ public class BlueCarpenterCannon extends LinearOpMode {
 
 
         if(shooterActive){
-            shootPower = cannon.shoot(distance);
+            cannon.shoot(distance);
         }
         else if (!shooterActive){
             cannon.stopShooter();
         }
 
-
+        cannon.handleShoot(shooterActive, distance, telemetryLogger);
 
         turn1.setPower(turningPower);
 
-        telemetry.addData("Shooter power", shootPower);
-        telemetry.addData("Turning Power", turningPower);
-        telemetry.addData("Distance", distance);
-        telemetry.addData("X offset", xOffset);
-        telemetry.addData("Fiducial ID", targetedFiducialId);
-        telemetry.addData("Y offset", yOffset);
-        telemetry.update();
         }
     }
-
-
-
 }
