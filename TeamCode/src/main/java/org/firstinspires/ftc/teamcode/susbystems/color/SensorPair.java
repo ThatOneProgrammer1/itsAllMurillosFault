@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.susbystems.color;
 
-import com.qualcomm.robotcore.hardware.ColorSensor;
-
 public class SensorPair<ColorSensorA, ColorSensorB> {
 
     public final ColorSensorA first;
