@@ -16,17 +16,14 @@ public class TelemetryLogger {
         telemetry.addData("Distance", distance);
         telemetry.addData("X offset", xOffset);
         telemetry.addData("Fiducial ID", fiducialId);
-        telemetry.update();
     }
 
     public void logShootPower(double power){
         telemetry.addData("Shoot Power", power);
-        telemetry.update();
     }
 
     public void log(String name, String data){
         telemetry.addData(name, data);
-        telemetry.update();
     }
 
 

@@ -79,7 +79,7 @@ public class ColorDet {
         Map<DetectedColor, Integer> heldMap = new HashMap<>();
         Map<DetectedColor, Integer> requiredMap = new HashMap<>();
 
-        for(SensorPair pair: sensorPairs){
+        for(SensorPair<ColorSensor, ColorSensor> pair: sensorPairs){
             DetectedColor color = detectColor(pair);
             heldMap.put(color, heldMap.getOrDefault(color, 0) + 1);
         }

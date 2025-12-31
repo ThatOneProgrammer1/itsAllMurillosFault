@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.susbystems.shooter;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
@@ -20,7 +21,7 @@ public class Cannon  {
 
     // constants
     private final double DEADZONE = 250;
-    private final double BASE_VELOCITY = 6000;
+    private final double BASE_VELOCITY = 2800;
     private final double MAX_POWER = 0.625;
     private final double MIN_POWER = 0.475;
     private final double MIN_SERVO_POS = 0.1;
@@ -36,6 +37,30 @@ public class Cannon  {
         shooter2 = hardwareMap.get(DcMotorEx.class, "shooter2");
         shooter2.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
+        shooterServo = hardwareMap.get(Servo.class, "shooterServo");
+
+        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
+
+    }
+
+    public double getServoPos(){
+        return shooterServo.getPosition();
+    }
+
+    public double setMotorPowers(double power){
+        shooter1.setPower(power);
+        shooter2.setPower(power);
+        return power;
+    }
+
+    public void testMaxVelocity(){
+        shooter1.setPower(1);
+        shooter2.setPower(1);
+    }
+
+    public double getAvgVelocity(){
+        return (shooter1.getVelocity() + shooter2.getVelocity()) / 2;
     }
 
     public double scalePower(double distance){
@@ -64,12 +89,9 @@ public class Cannon  {
     public double shoot(double distance){
 
         basePower = scalePower(distance);
-        servoPos = scaleServoPos(distance);
 
         shooter1.setPower(basePower);
         shooter2.setPower(basePower);
-
-        shooterServo.setPosition(servoPos);
 
         shootPower = basePower;
 
@@ -92,7 +114,7 @@ public class Cannon  {
 
         double expectedVelocity = BASE_VELOCITY * basePower;
         //avg velocity
-        double velocity = (shooter1.getVelocity() +  shooter2.getVelocity()) / 2;
+        double velocity = Math.abs((shooter1.getVelocity() +  shooter2.getVelocity()) / 2);
 
         return velocity > expectedVelocity - DEADZONE;
 
