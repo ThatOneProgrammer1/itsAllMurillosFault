@@ -1,14 +1,15 @@
-package org.firstinspires.ftc.teamcode.subsystems;
+package org.firstinspires.ftc.teamcode.subsystems.turret;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.helper.TelemetryLogger;
-import org.firstinspires.ftc.teamcode.helper.intefaces.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.other.TelemetryLogger;
 
-public class Cannon implements Shooter {
+public class Cannon {
 
     private DcMotorEx shooter1;
     private DcMotorEx shooter2;
@@ -18,11 +19,18 @@ public class Cannon implements Shooter {
     private double servoPos = 0.0;
     private double shootPower = 0.0;
 
-    public Cannon(HardwareMap hardwareMap){
+    private final double DEADZONE = 250;
+    private final double BASE_VELOCITY = 6000;
+    private final double MAX_POWER = 0.625;
+    private final double MIN_POWER = 0.475;
+    private final double MIN_SERVO_POS = 0.1;
+    private final double MAX_SERVO_POS = 0.6;
+    private final double MIN_DISTANCE = 30;
+    private final double MAX_DISTANCE = 115;
 
+    public Cannon(HardwareMap hardwareMap){
         shooter1 = hardwareMap.get(DcMotorEx.class, "shooter1");
         shooter1.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-
         shooter2 = hardwareMap.get(DcMotorEx.class, "shooter2");
         shooter2.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
@@ -46,7 +54,7 @@ public class Cannon implements Shooter {
     }
 
 
-    @Override
+
     public double shoot(double distance){
 
         basePower = scalePower(distance);
@@ -63,20 +71,20 @@ public class Cannon implements Shooter {
     }
 
 
-    @Override
+
     public void stopShooter(){
         shooter1.setPower(0);
         shooter2.setPower(0);
     }
 
-    @Override
+
     public void handleShoot(boolean shooterActive, double distance, TelemetryLogger telemetryLogger){
         if(shooterActive) shoot(distance);
         else stopShooter();
         telemetryLogger.logShootPower(shootPower);
     }
 
-    @Override
+
     public boolean isShooterReady(){
 
         double expectedVelocity = BASE_VELOCITY * basePower;
