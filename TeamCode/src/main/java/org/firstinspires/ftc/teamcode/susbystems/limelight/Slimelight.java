@@ -58,7 +58,7 @@ public class Slimelight {
             double scaledOffset = Range.scale(offset, MIN_OFFSET, MAX_OFFSET, MAX_LEFT_TURN, MAX_RIGHT_TURN);
             double clippedOffset = Range.clip(scaledOffset, MAX_LEFT_TURN, MAX_RIGHT_TURN);
 
-            double MIN_MOVEMENT_POWER = 0.25;
+            double MIN_MOVEMENT_POWER = 0.2;
 
             if (Math.abs(clippedOffset) < MIN_TURN_THRESHOLD) {
                 clippedOffset = clippedOffset * 1.5;

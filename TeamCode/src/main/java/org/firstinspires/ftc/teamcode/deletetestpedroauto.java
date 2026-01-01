@@ -27,6 +27,7 @@ public class deletetestpedroauto extends OpMode {
                 .addPath(new BezierLine(startPose, shootPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), shootPose.getHeading())
                 .build();
+
     }
 
     @Override
@@ -36,21 +37,21 @@ public class deletetestpedroauto extends OpMode {
         buildPaths();
         follower.setPose(startPose);
 
-
-
     }
 
     boolean ranAuto = false;
 
     @Override
     public void loop() {
+        follower.update();
         if(!follower.isBusy() && !ranAuto){
-            follower.followPath(testChain);
+            follower.followPath(testChain, true);
             ranAuto = true;
         }
         telemetry.addData("X", String.valueOf(follower.getPose().getX()));
         telemetry.addData("Y", String.valueOf(follower.getPose().getY()));
         telemetry.addData("Heading", String.valueOf(follower.getPose().getHeading()));
 
+        telemetry.update();
     }
 }
