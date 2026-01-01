@@ -1,14 +1,18 @@
 package org.firstinspires.ftc.teamcode.susbystems.teleops;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.susbystems.color.ColorDet;
+import org.firstinspires.ftc.teamcode.susbystems.drivetrain.Drivetrain;
+import org.firstinspires.ftc.teamcode.susbystems.indexing.Indexer;
 import org.firstinspires.ftc.teamcode.susbystems.intake.Intake;
 import org.firstinspires.ftc.teamcode.susbystems.limelight.Slimelight;
 import org.firstinspires.ftc.teamcode.susbystems.shooter.Cannon;
 import org.firstinspires.ftc.teamcode.susbystems.misc.TelemetryLogger;
+import org.firstinspires.ftc.teamcode.susbystems.shooter.Tracking;
 
 
 @TeleOp(name = "final red yesss")
@@ -25,9 +29,10 @@ public class finalred extends LinearOpMode {
     private Slimelight slimelight;
     private Cannon cannon;
     private TelemetryLogger telemetryLogger;
-    private Intake intake;
+    private Indexer indexer;
     final int redFiducialId = 24;
-    private ColorDet colorDet;
+    private Drivetrain drivetrain;
+    private Intake intake;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -35,8 +40,10 @@ public class finalred extends LinearOpMode {
         slimelight = new Slimelight(hardwareMap);
         cannon = new Cannon(hardwareMap);
         telemetryLogger = new TelemetryLogger(telemetry);
+        indexer = new Indexer(hardwareMap, telemetryLogger);
         intake = new Intake(hardwareMap);
-        colorDet = new ColorDet(hardwareMap);
+        drivetrain = new Drivetrain();
+        drivetrain.init(hardwareMap);
 
         runtime.reset();
         slimelight.initializeLimelight();
@@ -44,9 +51,16 @@ public class finalred extends LinearOpMode {
 
         if (isStopRequested()) return;
         boolean shooterActive = false;
+        boolean intakeActive = false;
         Mode mode = Mode.RANDOM;
 
         while (opModeIsActive()){
+
+            LLStatus status = slimelight.getStatus();
+
+            telemetry.addData("Name", "%s", status.getName());
+
+            telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d", status.getTemp(), status.getCpu(),(int)status.getFps());
 
             if(runtime.seconds() > 120){
                 mode = Mode.SORTING;
@@ -54,9 +68,16 @@ public class finalred extends LinearOpMode {
 
             double distance = slimelight.update(telemetryLogger, redFiducialId);
 
+            double x = gamepad1.left_stick_x;
+            double y = -gamepad1.left_stick_y;
+            double rx = gamepad1.right_stick_x;
+
+            drivetrain.driveFieldRelative(y, x, rx);
+
             LLResult res = slimelight.getResult();
 
             if(gamepad1.a){
+                indexer.startShooting();
                 shooterActive = true;
             }
             if(gamepad1.x){
@@ -67,13 +88,13 @@ public class finalred extends LinearOpMode {
                 cannon.testMaxVelocity();
             }
 
+            if(gamepad1.y){
+                intakeActive = !intakeActive;
+            }
+
 
             if(shooterActive && cannon.isShooterReady()){
-
-                if(mode == Mode.RANDOM){
-                    intake.liftRandomBalls();
-                }
-
+                indexer.update();
             }
 
             if(res.isValid() && !res.getFiducialResults().isEmpty()){
@@ -82,11 +103,11 @@ public class finalred extends LinearOpMode {
                 }
             }
 
-
+            intake.intakeTest(intakeActive);
 
             cannon.handleShoot(shooterActive, distance, telemetryLogger);
             telemetryLogger.log("Motor Velocity", String.valueOf(cannon.getAvgVelocity()));
-            telemetryLogger.log("Runtime", String.valueOf(runtime.seconds()));
+//            telemetryLogger.log("Runtime", String.valueOf(runtime.seconds()));
 //            telemetryLogger.log("Motif", (seenMotif ? "Seen" : "Not Seen"));
             telemetryLogger.log("Result", (res.isValid() ? "Valid" : "Invalid"));
             telemetry.update();

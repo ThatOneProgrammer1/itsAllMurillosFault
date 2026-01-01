@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.susbystems.teleops;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import org.firstinspires.ftc.teamcode.susbystems.intake.Intake;
+import org.firstinspires.ftc.teamcode.susbystems.indexing.Indexer;
 import org.firstinspires.ftc.teamcode.susbystems.limelight.Slimelight;
 import org.firstinspires.ftc.teamcode.susbystems.shooter.Cannon;
 import org.firstinspires.ftc.teamcode.susbystems.misc.TelemetryLogger;
@@ -20,7 +20,7 @@ public class RedCarpenterCannon extends LinearOpMode {
     private Slimelight slimelight;
     private Cannon cannon;
     private TelemetryLogger telemetryLogger;
-    private Intake intake;
+    private Indexer indexer;
     final int redFiducialId = 24;
 
     @Override
@@ -29,7 +29,7 @@ public class RedCarpenterCannon extends LinearOpMode {
         slimelight = new Slimelight(hardwareMap);
         cannon = new Cannon(hardwareMap);
         telemetryLogger = new TelemetryLogger(telemetry);
-        intake = new Intake(hardwareMap);
+        indexer = new Indexer(hardwareMap, telemetryLogger);
 
 
         waitForStart();

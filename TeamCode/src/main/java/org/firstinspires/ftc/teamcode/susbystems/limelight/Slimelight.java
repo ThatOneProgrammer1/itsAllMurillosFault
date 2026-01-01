@@ -2,15 +2,15 @@ package org.firstinspires.ftc.teamcode.susbystems.limelight;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.teamcode.susbystems.color.ColorDet;
 import org.firstinspires.ftc.teamcode.susbystems.misc.TelemetryLogger;
-import org.firstinspires.ftc.teamcode.susbystems.misc.Tracking;
+import org.firstinspires.ftc.teamcode.susbystems.shooter.Tracking;
 
 public class Slimelight {
 
@@ -18,14 +18,11 @@ public class Slimelight {
     private Tracking tracking;
 
     private final double OFFSET_ZONE = 3;
-    private final double MAX_LEFT_TURN = -0.25;
-    private final double MAX_RIGHT_TURN = 0.25;
-
+    private final double MAX_LEFT_TURN = -0.5;
+    private final double MAX_RIGHT_TURN = 0.5;
     private final double MIN_OFFSET = -30;
     private final double MAX_OFFSET = 30;
     private final double MIN_TURN_THRESHOLD = 0.075;
-    private final int BLUE_ID = 20;
-    private final int RED_ID = 24;
 
     private double distance = 0;
 
@@ -36,6 +33,10 @@ public class Slimelight {
 
     public double getDistance() {
         return distance;
+    }
+
+    public LLStatus getStatus(){
+        return slimelight.getStatus();
     }
 
     public double getXOffset(LLResult result, int targetedFiducialId) {
@@ -57,11 +58,17 @@ public class Slimelight {
             double scaledOffset = Range.scale(offset, MIN_OFFSET, MAX_OFFSET, MAX_LEFT_TURN, MAX_RIGHT_TURN);
             double clippedOffset = Range.clip(scaledOffset, MAX_LEFT_TURN, MAX_RIGHT_TURN);
 
+            double MIN_MOVEMENT_POWER = 0.25;
+
             if (Math.abs(clippedOffset) < MIN_TURN_THRESHOLD) {
-                return (clippedOffset * 2) / 3;
-            } else {
-                return (clippedOffset / 3);
+                clippedOffset = clippedOffset * 1.5;
             }
+
+            if (Math.abs(clippedOffset) < MIN_MOVEMENT_POWER) {
+                clippedOffset = Math.copySign(MIN_MOVEMENT_POWER, clippedOffset);
+            }
+
+            return clippedOffset;
         }
     }
 
@@ -86,13 +93,6 @@ public class Slimelight {
         }
 
         return 0;
-    }
-
-    public LLResultTypes.FiducialResult getLatestResult(LLResult result) {
-        if (result.isValid() && !result.getFiducialResults().isEmpty()) {
-            return result.getFiducialResults().get(0);
-        }
-        return null;
     }
 
     public LLResultTypes.FiducialResult getResultForTracking(LLResult result, int targetId) {
@@ -130,15 +130,5 @@ public class Slimelight {
         return distance;
     }
 
-    public boolean fetchMotifId(ColorDet colorDet) {
-        LLResultTypes.FiducialResult res = getLatestResult(getResult());
-
-        if (res == null || res.getFiducialId() == RED_ID || res.getFiducialId() == BLUE_ID) {
-            return false;
-        } else {
-            colorDet.getMotif(res.getFiducialId());
-            return true;
-        }
-    }
 }
 

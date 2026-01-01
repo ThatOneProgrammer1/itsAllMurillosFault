@@ -1,5 +1,4 @@
 package org.firstinspires.ftc.teamcode.susbystems.misc;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class TelemetryLogger {
@@ -22,8 +21,12 @@ public class TelemetryLogger {
         telemetry.addData("Shoot Power", power);
     }
 
-    public void log(String name, String data){
-        telemetry.addData(name, data);
+    public void logState(String state) {
+        telemetry.addData("Index state", state);
+    }
+
+    public void log(String key, String val){
+        telemetry.addData(key, val);
     }
 
 

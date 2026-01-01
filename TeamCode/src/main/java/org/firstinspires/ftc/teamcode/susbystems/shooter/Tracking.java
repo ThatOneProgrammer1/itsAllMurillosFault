@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.susbystems.misc;
+package org.firstinspires.ftc.teamcode.susbystems.shooter;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
