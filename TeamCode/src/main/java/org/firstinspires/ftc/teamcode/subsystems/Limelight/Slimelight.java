@@ -9,12 +9,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.subsystems.other.TelemetryLogger;
-import org.firstinspires.ftc.teamcode.subsystems.turret.Tracking;
 
 public class Slimelight {
 
     private Limelight3A slimelight;
-    private Tracking tracking;
+  //  private Tracking tracking;
 
     //consts
     private final double OFFSET_ZONE = 4.0;
@@ -29,7 +28,7 @@ public class Slimelight {
 
     public Slimelight(HardwareMap hardwareMap){
         slimelight = hardwareMap.get(Limelight3A.class, "slimelight");
-        tracking = new Tracking(hardwareMap);
+     //   tracking = new Tracking(hardwareMap);
     }
 
 
@@ -134,7 +133,7 @@ public class Slimelight {
         double yOffset = getYOffset(result, fiducialId);
         double turningPower = trackAprilTag(result, fiducialId);
 
-        tracking.turnMotor(turningPower);
+     //   tracking.turnMotor(turningPower);
         telemetryLogger.logLimelight(distance, xOffset, fiducialId, yOffset);
 
 

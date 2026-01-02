@@ -18,8 +18,8 @@ public class vroomvroom {
         frontRightMotor = hwMap.get(DcMotor.class, "frontRightMotor");
         backRightMotor = hwMap.get(DcMotor.class, "backRightMotor");
 
-        frontLeftMotor.setDirection(DcMotor.Direction.REVERSE);
-        backLeftMotor.setDirection(DcMotor.Direction.REVERSE);
+        frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        backRightMotor.setDirection(DcMotor.Direction.REVERSE);
 
         frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -76,5 +76,8 @@ public class vroomvroom {
 
         // Finally, call the drive method with robot relative forward and right amounts
         drive(newForward, newRight, rotate);
+    }
+    public void resetPos(){
+            imu.resetYaw();
     }
 }

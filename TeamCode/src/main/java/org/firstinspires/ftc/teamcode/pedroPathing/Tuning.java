@@ -373,7 +373,7 @@ class ForwardVelocityTuner extends OpMode {
     public void loop() {
         if (gamepad1.bWasPressed()) {
             stopRobot();
-            requestOpModeStop();
+            this.requestOpModeStop();
         }
 
         follower.update();

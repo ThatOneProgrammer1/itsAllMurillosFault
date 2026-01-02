@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.teleops;
+package org.firstinspires.ftc.teamcode.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -73,7 +73,7 @@ public class testingServo extends LinearOpMode {
             }
 
             if (gamepad1.dpad_right){
-                sorter3.setPosition(0.48);
+                sorter3.setPosition(0.52);
                 servoPlace2 = "Down";
             }
 

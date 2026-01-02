@@ -31,15 +31,24 @@ public class Cannon {
     public Cannon(HardwareMap hardwareMap){
         shooter1 = hardwareMap.get(DcMotorEx.class, "shooter1");
         shooter1.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        shooter1.setDirection(DcMotorSimple.Direction.REVERSE);
         shooter2 = hardwareMap.get(DcMotorEx.class, "shooter2");
         shooter2.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         shooterServo = hardwareMap.get(Servo.class, "servo1");
 
     }
 
     public double scalePower(double distance){
-        return 1.0;
+
+        if(distance != 0){
+            double power = Range.scale(distance, MIN_DISTANCE, MAX_DISTANCE, MIN_POWER, MAX_POWER);
+            power = Range.clip(power, MIN_POWER, MAX_POWER);
+            return power;
+        }
+
+        return 0.0;
     }
 
     public double scaleServoPos(double distance){
