@@ -20,160 +20,94 @@ public class testpedro extends OpMode {
     private Follower follower;
     private Timer pathTimer, opModeTimer;
     private Intake intake;
-    private Slimelight slimelight;
-    private TelemetryLogger logger;
-    private Cannon cannon;
 
     public enum PathState {
-        DRIVE_STARTPOS_SHOOT_POS,
-        SHOOT_STARTPOS_INTAKE_BEGIN_POS,
-        INTAKE_STARTPOS_INTAKE_END_POS,
-        INTAKE_STARTPOS_SHOOT_POS,
-        SHOOT_STARTPOS_INTAKE2_POS,
-        INTAKE2_BEGIN_STARTPOS_START_POS,
-        INTAKE2_START_STARTPOS_END_POS
+        DRIVE_TO_SHOOT,
+        DRIVE_TO_INTAKE_1,
+        DRIVE_BACK_TO_SHOOT,
+        DRIVE_TO_INTAKE_2,
+        STAY_AT_INTAKE_2,
+        FINISHED
     }
 
     PathState pathState;
+    Pose pose;
 
-    // the position where the robot starts (facing blue goal)
-    private final Pose startPose = new Pose(21.171528588098013, 122.15635939323221, Math.toRadians(135));
+    private final Pose startPose = new Pose(21.17, 122.15, Math.toRadians(180));
+    private final Pose shootPose = new Pose(60.65, 83.00, Math.toRadians(135));
+    private final Pose intake1Pose = new Pose(33.43, 83.50, Math.toRadians(180));
+    private final Pose intake2Pose = new Pose(60.82, 59.64, Math.toRadians(180));
 
-    // the position where we should shoot (on the triangle blue side)
-    private final Pose shootPose = new Pose(60.65810968494749, 83.00583430571761, Math.toRadians(180));
-
-    // the position where we would begin intake (right next to first set of balls on blue side)
-    private final Pose intakeBeginPose = new Pose(33.43757292882147, 83.50991831971996, Math.toRadians(180));
-
-    // position where intake will end (end of first set of balls)
-    private final Pose intakeEndPose = new Pose(14.114352392065344, 83.50991831971996, Math.toRadians(180));
-
-    // position where we shoot again
-    private final Pose intakeToShootPose = new Pose(60.99416569428238, 83.17386231038508, Math.toRadians(135));
-
-    // position straight line below where we shoot next to second set
-    private final Pose shootToIntake2BeginPose = new Pose(60.82613768961494, 59.649941656942815, Math.toRadians(180));
-
-    // in front of the second set of balls
-    private final Pose intakeBeginToStartPose = new Pose(32.59743290548425, 59.649941656942815, Math.toRadians(180));
-
-    // end of second set of balls
-    private final Pose intakeStartToEndPose = new Pose(13.106184364060677, 59.649941656942815, Math.toRadians(180));
-
-
-    // moves from start position to shooting position
-    private PathChain driveStartPosShootPos;
-
-    // moves from shooting position to beginning of intake for first set of balls
-    private PathChain shootStartPosIntakePos;
-
-    // moves from first intake set to the end intaking all first set balls
-    private PathChain intakeStartPosIntakePos;
-
-    // moves from end of intake to shooting position again
-    private PathChain intakeStartPosShootPos;
-
-    // lower on the straight line next to second set of balls
-    private PathChain shootStartPosIntake2Pos;
-
-    private PathChain intake2BeginToStartPos;
-
-    private PathChain intake2StartToEndPos;
+    private PathChain toShoot, toIntake1, backToShoot, toIntake2;
 
     public void buildPaths(){
-
-        driveStartPosShootPos = follower.pathBuilder()
+        // Start -> Shoot
+        toShoot = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, shootPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), shootPose.getHeading())
                 .build();
 
-        shootStartPosIntakePos = follower.pathBuilder()
-                .addPath(new BezierLine(shootPose, intakeBeginPose))
-                .setLinearHeadingInterpolation(shootPose.getHeading(), intakeBeginPose.getHeading())
+        // Shoot -> Intake 1
+        toIntake1 = follower.pathBuilder()
+                .addPath(new BezierLine(shootPose, intake1Pose))
+                .setLinearHeadingInterpolation(shootPose.getHeading(), intake1Pose.getHeading())
                 .build();
 
-        intakeStartPosIntakePos = follower.pathBuilder()
-                .addPath(new BezierLine(intakeBeginPose, intakeEndPose))
-                .setLinearHeadingInterpolation(intakeBeginPose.getHeading(), intakeEndPose.getHeading())
+        // Intake 1 -> Shoot
+        backToShoot = follower.pathBuilder()
+                .addPath(new BezierLine(intake1Pose, shootPose))
+                .setLinearHeadingInterpolation(intake1Pose.getHeading(), shootPose.getHeading())
                 .build();
 
-        intakeStartPosShootPos = follower.pathBuilder()
-                .addPath(new BezierLine(intakeEndPose, intakeToShootPose))
-                .setLinearHeadingInterpolation(intakeEndPose.getHeading(), intakeToShootPose.getHeading())
+        toIntake2 = follower.pathBuilder()
+                .addPath(new BezierLine(shootPose, intake2Pose))
+                .setLinearHeadingInterpolation(shootPose.getHeading(), intake2Pose.getHeading())
                 .build();
-
-        shootStartPosIntake2Pos = follower.pathBuilder()
-                .addPath(new BezierLine(intakeToShootPose, shootToIntake2BeginPose))
-                .setLinearHeadingInterpolation(intakeToShootPose.getHeading(), shootToIntake2BeginPose.getHeading())
-                .build();
-
-        intake2BeginToStartPos = follower.pathBuilder()
-                .addPath(new BezierLine(shootToIntake2BeginPose, intakeBeginToStartPose))
-                .setLinearHeadingInterpolation(shootToIntake2BeginPose.getHeading(), intakeBeginPose.getHeading())
-                .build();
-
-        intake2StartToEndPos = follower.pathBuilder()
-                .addPath(new BezierLine(intakeBeginToStartPose, intakeStartToEndPose))
-                .setLinearHeadingInterpolation(intakeBeginPose.getHeading(), intakeStartToEndPose.getHeading())
-                .build();
-
     }
 
-    public void statePathUpdate(){
+    public void statePathUpdate() {
+
         switch(pathState) {
-
-            case DRIVE_STARTPOS_SHOOT_POS:
-                follower.followPath(driveStartPosShootPos, true);
-                setPathState(PathState.SHOOT_STARTPOS_INTAKE_BEGIN_POS);
+            case DRIVE_TO_SHOOT:
+                follower.followPath(toShoot, true);
+                setPathState(PathState.DRIVE_TO_INTAKE_1);
                 break;
 
-            case SHOOT_STARTPOS_INTAKE_BEGIN_POS:
+            case DRIVE_TO_INTAKE_1:
                 if(!follower.isBusy()){
-                    follower.followPath(shootStartPosIntakePos, true);
                     intake.startIntake();
-                    setPathState(PathState.INTAKE_STARTPOS_INTAKE_END_POS);
+                    follower.followPath(toIntake1, true);
+                    setPathState(PathState.DRIVE_BACK_TO_SHOOT);
                 }
                 break;
 
-            case INTAKE_STARTPOS_INTAKE_END_POS:
+            case DRIVE_BACK_TO_SHOOT:
                 if(!follower.isBusy()){
-                    follower.followPath(intakeStartPosIntakePos, true);
                     intake.stopIntake();
-                    setPathState(PathState.INTAKE_STARTPOS_SHOOT_POS);
+                    follower.followPath(backToShoot, true);
+                    setPathState(PathState.DRIVE_TO_INTAKE_2);
                 }
-            case INTAKE_STARTPOS_SHOOT_POS:
-                if(!follower.isBusy()){
+                break;
 
-                    //shooting logic next
-
-                    follower.followPath(intakeStartPosShootPos, true);
-
-                    //rep;lace with shooting logic
-                    cannon.setMotorPowers(1);
-                    setPathState(PathState.SHOOT_STARTPOS_INTAKE2_POS);
-                }
-            case SHOOT_STARTPOS_INTAKE2_POS:
-                if(!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 5){
-                    cannon.setMotorPowers(0);
-                    follower.followPath(shootStartPosIntake2Pos);
-                    setPathState(PathState.INTAKE2_BEGIN_STARTPOS_START_POS);
-                }
-            case INTAKE2_BEGIN_STARTPOS_START_POS:
+            case DRIVE_TO_INTAKE_2:
                 if(!follower.isBusy()){
-                    follower.followPath(intake2BeginToStartPos);
-                    setPathState(PathState.INTAKE2_START_STARTPOS_END_POS);
-                    intake.startIntake();
+                    if(pathTimer.getElapsedTimeSeconds() > 2.0) {
+                        intake.startIntake();
+                        follower.followPath(toIntake2, true);
+                        setPathState(PathState.STAY_AT_INTAKE_2);
+                    }
                 }
-            case INTAKE2_START_STARTPOS_END_POS:
+                break;
+
+            case STAY_AT_INTAKE_2:
                 if(!follower.isBusy()){
-                    follower.followPath(intake2StartToEndPos);
                     intake.stopIntake();
-                    telemetry.addLine("Auto Finished");
+                    setPathState(PathState.FINISHED);
                 }
+                break;
 
-
-            default:
-                telemetry.addLine("No state commanded");
+            case FINISHED:
+                break;
         }
     }
 
@@ -184,39 +118,35 @@ public class testpedro extends OpMode {
 
     @Override
     public void init() {
-        pathState = PathState.DRIVE_STARTPOS_SHOOT_POS;
-
         pathTimer = new Timer();
         opModeTimer = new Timer();
 
         follower = Constants.createFollower(hardwareMap);
         intake = new Intake(hardwareMap);
-        slimelight = new Slimelight(hardwareMap);
-        logger = new TelemetryLogger(telemetry);
-        cannon = new Cannon(hardwareMap);
 
         buildPaths();
-
         follower.setPose(startPose);
-        setPathState(pathState);
+        setPathState(PathState.DRIVE_TO_SHOOT);
     }
 
     @Override
     public void loop() {
 
-        slimelight.update(logger, 24);
-
         follower.update();
         statePathUpdate();
 
-        if(follower.getPose() != null){
-            telemetry.addData("Y", follower.getPose().getY());
-            telemetry.addData("X", follower.getPose().getX());
-        }
+        pose = follower.getPose();
+        double disToPos = follower.getTranslationalError().getMagnitude();
+        double headingError = follower.getHeading();
 
-        telemetry.addData("Path", pathState.toString());
-        telemetry.addData("Path Timer", String.valueOf(pathTimer.getElapsedTime()));
+
+
+        telemetry.addData("Path State", pathState);
+        telemetry.addData("X", pose.getX());
+        telemetry.addData("Y", pose.getY());
+        telemetry.addData("Heading (deg)", Math.toDegrees(follower.getHeading()));
+        telemetry.addData("Distance", disToPos);
+        telemetry.addData("Heading Error", headingError);
         telemetry.update();
     }
-
 }
